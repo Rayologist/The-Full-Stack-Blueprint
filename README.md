@@ -72,3 +72,44 @@ const db = new Pool({
   database: process.env.POSTGRES_USER,
 });
 ```
+
+### Create User Table
+
+```typescript
+export type CreateUserArgsType = Pick<
+  User,
+  "email" | "password" | "firstName" | "lastName"
+>;
+
+export async function createUser(
+  args: CreateUserArgsType
+): Promise<User | null> {
+  const { email, password, firstName, lastName } = args;
+  const result = await db.query(
+    `
+        INSERT INTO users (id, "firstName", "lastName", email, password)
+        VALUES (uuid_generate_v4(), $1, $2, $3, $4)
+        RETURNING *
+    `,
+    [firstName, lastName, email, password]
+  );
+
+  return result.rows[0] ?? null;
+}
+```
+
+## Find Users
+
+```typescript
+export async function findUsers(): Promise<User[]> {
+  const result = await db.query(
+    `
+        SELECT *
+        FROM users
+    `
+  );
+
+  return result.rows;
+}
+
+```
